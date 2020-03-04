@@ -55,5 +55,20 @@ class CreateUser(GenericAPIView):
 
 def activate(request, surl):   
     print("surl :", surl)
-    return HttpResponse('successfully registered')
+    return redirect('/login/')
 
+class LoginUser(GenericAPIView):
+    serializer_class = LoginSerializer
+
+    def post(self, request):
+        #print(request.data)
+        username=request.data['username']
+        #print(username)
+        password=request.data['password']
+        #print(password)
+        user = authenticate(username=username,password=password)
+        if user is not None:
+            if user.is_active:
+                auth.login(request, user)
+                return Response("successfully logged in")
+        return HttpResponse("Invalide login user details")
