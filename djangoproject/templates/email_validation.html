@@ -1,0 +1,5 @@
+{% autoescape off %} 
+Hi {{ username }} 
+Please click on the below link to confirm your to activate your register account, 
+http://{{ domain }}{% url 'activate' surl=surl %} 
+{% endautoescape %}
