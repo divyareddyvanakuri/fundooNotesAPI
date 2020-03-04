@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Person
-
 from django.contrib.auth.models import User
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:

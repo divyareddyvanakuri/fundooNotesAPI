@@ -58,7 +58,7 @@ ROOT_URLCONF = 'djangoproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,12 +80,12 @@ WSGI_APPLICATION = 'djangoproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME' : 'fundoo',
-        'USER' : 'Divya',
-        'PASSWORD' : '12',
-        'HOST':'localhost',
+        'NAME': 'fundoo',
+        'USER': 'Divya',
+        'PASSWORD': '12',
+        'HOST': 'localhost',
         # 'default-character-set' : 'utf8',
-        'PORT':'3306'
+        'PORT': '3306'
     }
 }
 
@@ -128,7 +128,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-#DataFlair # email
+# DataFlair # email
 '''
     we are sending mails throug django
 '''
@@ -145,6 +145,6 @@ EMAIL_USE_SSL = False
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-REST_FRAMEWORK = { 
-        'DEFAULT_SCHEMA_CLASS':'rest_framework.schemas.coreapi.AutoSchema' ,
-   }
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+}
