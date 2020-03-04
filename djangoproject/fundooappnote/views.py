@@ -96,7 +96,7 @@ class ForgotPassword(GenericAPIView):
         z=surl.split("/")
         print(z[2])
         mail_subject = "Activate your account"
-        msg1 = render_to_string('passwordactivation.html', {
+        msg1 = render_to_string('password_activation.html', {
         'username': username,
         'domain': domain_name,
         'surl': z[2]
@@ -104,3 +104,11 @@ class ForgotPassword(GenericAPIView):
         print("msg",msg1)
         send_mail(mail_subject,msg1,EMAIL_HOST_USER,[email],fail_silently=False,) 
         return HttpResponse('successfully reseted the password')
+
+def passwordactivation(request, surl):
+        print("surl :", surl)
+        url = ShortURL.objects.get(surl=surl)
+        token = url.lurl
+        username = jwt.decode(token,'SECRET_KEY')
+        print(username)
+        return redirect('/setpassword/'+str(username))

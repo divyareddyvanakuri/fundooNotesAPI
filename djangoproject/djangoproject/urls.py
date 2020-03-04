@@ -27,5 +27,6 @@ urlpatterns = [
     path('activate/<slug:surl>/',views.activate,name='activate'),
     path('login/',views.LoginUser.as_view()),
     path('forgotpassword/',views.ForgotPassword.as_view()),
+    path('passwordactivation/<slug:surl>/',views.passwordactivation,name='passwordactivation'),
     url(r'^$', schema_view),
 ]
