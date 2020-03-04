@@ -26,5 +26,6 @@ urlpatterns = [
     path('register/',views.CreateUser.as_view()),
     path('activate/<slug:surl>/',views.activate,name='activate'),
     path('login/',views.LoginUser.as_view()),
+    path('forgotpassword/',views.ForgotPassword.as_view()),
     url(r'^$', schema_view),
 ]

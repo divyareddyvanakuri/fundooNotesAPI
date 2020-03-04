@@ -72,3 +72,35 @@ class LoginUser(GenericAPIView):
                 auth.login(request, user)
                 return Response("successfully logged in")
         return HttpResponse("Invalide login user details")
+
+class ForgotPassword(GenericAPIView):
+    serializer_class = ForgotPasswordSerializer
+
+    def post(self, request):
+        email = request.data['email']
+        if User.objects.filter(email=email).count() == 0:
+            return HttpResponse("invalide user")
+    
+        user = User.objects.get(email=email)
+        username = user.username
+        print(username)
+        token = passwordActivation(username)
+        print(token)
+        current_site = get_current_site(request)
+        domain_name = current_site.domain
+        print(jwt.decode(token,'SECRET_KEY')) 
+        url = str(token)
+        print("url:",url)
+        surl = get_surl(url)
+        print("surl:",surl)
+        z=surl.split("/")
+        print(z[2])
+        mail_subject = "Activate your account"
+        msg1 = render_to_string('passwordactivation.html', {
+        'username': username,
+        'domain': domain_name,
+        'surl': z[2]
+        })
+        print("msg",msg1)
+        send_mail(mail_subject,msg1,EMAIL_HOST_USER,[email],fail_silently=False,) 
+        return HttpResponse('successfully reseted the password')
