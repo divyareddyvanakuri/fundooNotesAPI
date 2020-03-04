@@ -53,3 +53,7 @@ class CreateUser(GenericAPIView):
             return HttpResponse('user is already existed')
         return HttpResponse("password mismatch")
 
+def activate(request, surl):   
+    print("surl :", surl)
+    return HttpResponse('successfully registered')
+
