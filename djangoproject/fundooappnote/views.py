@@ -9,21 +9,19 @@ from django.template.loader import render_to_string
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from .serializers import RegisterSerializer, LoginSerializer, SetPasswordSerializer, UserSerializer, ForgotPasswordSerializer
+from .serializers import RegisterSerializer,LoginSerializer,SetPasswordSerializer,UserSerializer,ForgotPasswordSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User, auth
 from .token_activation import tokenActivation, passwordActivation
 from django.views.decorators.csrf import csrf_exempt
 import jwt
 
+
 # Create your views here.
-
-
 class CreateUser(GenericAPIView):
     serializer_class = RegisterSerializer
     @ csrf_exempt
     def post(self, request):
-        # print(request.data)
         username = request.data['username']
         email = request.data['email']
         password = request.data['password']
@@ -39,17 +37,10 @@ class CreateUser(GenericAPIView):
                 domain_name = current_site.domain
                 # print(jwt.decode(token,'SECRET_KEY'))
                 url = str(token)
-                # print("url:",url)
                 surl = get_surl(url)
-                # print("surl:",surl)
                 z = surl.split("/")
-                # print(z[2])
                 mail_subject = "Activate your account"
-                msg = render_to_string('email_validation.html', {
-                    'username': username,
-                    'domain': domain_name,
-                    'surl': z[2]
-                })
+                msg = render_to_string('email_validation.html', {'username': username,'domain': domain_name,'surl': z[2]})
                 print("msg", msg)
                 send_mail(mail_subject, msg, EMAIL_HOST_USER,
                           [email], fail_silently=False,)
@@ -67,17 +58,14 @@ class LoginUser(GenericAPIView):
     serializer_class = LoginSerializer
 
     def post(self, request):
-        # print(request.data)
         username = request.data['username']
-        # print(username)
         password = request.data['password']
-        # print(password)
         user = authenticate(username=username, password=password)
         if user is not None:
             if user.is_active:
                 auth.login(request, user)
                 return Response("successfully logged in")
-        return HttpResponse("Invalide login user details")
+        return Response("Invalide user")
 
 
 class ForgotPassword(GenericAPIView):
@@ -86,45 +74,40 @@ class ForgotPassword(GenericAPIView):
     def post(self, request):
         email = request.data['email']
         if User.objects.filter(email=email).count() == 0:
-            return HttpResponse("invalide user")
+            return Response("invalide user")
 
         user = User.objects.get(email=email)
         username = user.username
         print(username)
         token = passwordActivation(username)
-        print(token)
         current_site = get_current_site(request)
         domain_name = current_site.domain
         print(jwt.decode(token, 'SECRET_KEY'))
         url = str(token)
-        print("url:", url)
         surl = get_surl(url)
-        print("surl:", surl)
         z = surl.split("/")
-        print(z[2])
         mail_subject = "Activate your account"
-        msg1 = render_to_string('password_activation.html', {
-            'username': username,
-            'domain': domain_name,
-            'surl': z[2]
-        })
+        msg1 = render_to_string('password_activation.html', {'username': username,'domain': domain_name,'surl': z[2]})
         print("msg", msg1)
         send_mail(mail_subject, msg1, EMAIL_HOST_USER,
                   [email], fail_silently=False,)
         return Response(msg1)
 
 
-class SetPassword(APIView):
+class ResetPassword(GenericAPIView):
     serializer_class = SetPasswordSerializer
 
-    def post(self, request, username):
+    def post(self, request):
+        username = self.request.user.username
         newpassword = request.data['password']
         confirmpassword = request.data['confirmpassword']
-        if newpassword == confirmpassword:
+        user_count = User.objects.filter(username=username).count()
+        if newpassword == confirmpassword and user_count == 1:
             user = User.objects.get(username=username)
             user.set_password(newpassword)
             user.save()
-        return redirect('/logout/')
+            return Response("you are succesfully reseted the account password")
+        return Response("please login ,before reset your password")
 
 
 def passwordactivation(request, surl):
@@ -133,8 +116,8 @@ def passwordactivation(request, surl):
     token = url.lurl
     username = jwt.decode(token, 'SECRET_KEY')
     print(username)
-    return redirect('/setpassword/'+str(username))
+    return redirect('/reset/')
 
 def logout(request):
     auth.logout(request)
-    return HttpResponse('successfully  logged out')
+    return HttpResponse('you are successfully logged out from your account')

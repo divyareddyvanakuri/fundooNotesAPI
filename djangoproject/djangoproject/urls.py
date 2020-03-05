@@ -19,17 +19,17 @@ from fundooappnote import views
 from django.conf.urls import url
 from rest_framework_swagger.views import get_swagger_view
 
-schema_view = get_swagger_view(title='Pastebin API')
+schema_view = get_swagger_view(title='fundooNotes API')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', views.CreateUser.as_view()),
     path('activate/<slug:surl>/', views.activate, name='activate'),
     path('login/', views.LoginUser.as_view()),
-    path('forgotpassword/', views.ForgotPassword.as_view()),
+    path('forgot/', views.ForgotPassword.as_view()),
     path('passwordactivation/<slug:surl>/',
          views.passwordactivation, name='passwordactivation'),
-    path('setpassword/<username>',views.SetPassword.as_view()),
+    path('reset/',views.ResetPassword.as_view()),
     path('logout/',views.logout),
     url(r'^$', schema_view),
 ]
