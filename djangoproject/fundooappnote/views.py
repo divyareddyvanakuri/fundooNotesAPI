@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django_short_url.views import get_surl
 from django_short_url.models import ShortURL
 from django.contrib.sites.shortcuts import get_current_site
@@ -9,14 +9,15 @@ from django.template.loader import render_to_string
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from .serializers import RegisterSerializer,LoginSerializer,SetPasswordSerializer,UserSerializer,ForgotPasswordSerializer
+from .serializers import RegisterSerializer, LoginSerializer, SetPasswordSerializer, UserSerializer, ForgotPasswordSerializer,NotesSerializer,TitleSerializer,TextSerializer
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User, auth
+from django.contrib.auth.models import User,auth,UserManager
+from .models import Note
 from .token_activation import tokenActivation, passwordActivation
 from django.views.decorators.csrf import csrf_exempt
 import jwt
-
-
+from rest_framework import status
+# objects = UserManager()
 # Create your views here.
 class CreateUser(GenericAPIView):
     serializer_class = RegisterSerializer
@@ -40,7 +41,8 @@ class CreateUser(GenericAPIView):
                 surl = get_surl(url)
                 z = surl.split("/")
                 mail_subject = "Activate your account"
-                msg = render_to_string('email_validation.html', {'username': username,'domain': domain_name,'surl': z[2]})
+                msg = render_to_string('email_validation.html', {
+                                       'username': username, 'domain': domain_name, 'surl': z[2]})
                 print("msg", msg)
                 send_mail(mail_subject, msg, EMAIL_HOST_USER,
                           [email], fail_silently=False,)
@@ -64,8 +66,24 @@ class LoginUser(GenericAPIView):
         if user is not None:
             if user.is_active:
                 auth.login(request, user)
-                return Response("successfully logged in")
+                return redirect("/createnote/")
         return Response("Invalide user")
+
+
+class createNote(GenericAPIView):
+    serializer_class = NotesSerializer
+
+    def post(self, request):
+        try:
+            user = User.objects.get(username=self.request.user.username)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        title = request.data['title']                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+        text = request.data['text']
+        note = Note(user=user,title=title,text=text)
+        note.save()
+        return Response("note successfully added")
+        
 
 
 class ForgotPassword(GenericAPIView):
@@ -87,7 +105,8 @@ class ForgotPassword(GenericAPIView):
         surl = get_surl(url)
         z = surl.split("/")
         mail_subject = "Activate your account"
-        msg1 = render_to_string('password_activation.html', {'username': username,'domain': domain_name,'surl': z[2]})
+        msg1 = render_to_string('password_activation.html', {
+                                'username': username, 'domain': domain_name, 'surl': z[2]})
         print("msg", msg1)
         send_mail(mail_subject, msg1, EMAIL_HOST_USER,
                   [email], fail_silently=False,)
@@ -117,6 +136,7 @@ def passwordactivation(request, surl):
     username = jwt.decode(token, 'SECRET_KEY')
     print(username)
     return redirect('/reset/')
+
 
 def logout(request):
     auth.logout(request)

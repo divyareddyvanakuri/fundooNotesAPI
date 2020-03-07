@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_short_url',
-    'rest_framework_swagger',
+    # 'rest_framework_swagger',
     'fundooappnote',
 ]
 
@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'djangoproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'fundoo',
+        'NAME': 'demodb',
         'USER': 'Divya',
         'PASSWORD': '12',
         'HOST': 'localhost',
@@ -145,6 +145,6 @@ EMAIL_USE_SSL = False
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+# }

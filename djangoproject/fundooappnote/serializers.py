@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person
+from .models import Person,Note
 from django.contrib.auth.models import User
 
 
@@ -31,3 +31,17 @@ class ForgotPasswordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
         fields = ['email']
+
+class NotesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =Note
+        fields = ['title','text']
+
+class TitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =Note
+        fields = ['title']
+class TextSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =Note
+        fields = ['text']
