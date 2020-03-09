@@ -153,3 +153,29 @@ class CreateNote(GenericAPIView):
             serializer = NoteSerializer(note)
             return Response(serializer.data)
         return Response("with same title name note already existed")
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def note_detail(request, pk):
+    """
+    Retrieve, update or delete a code snippet.
+    """
+    try:
+        note = Note.objects.get(pk=pk)
+    except note.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = NoteSerializer(note)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = NoteSerializer(note, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        note.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -32,5 +32,6 @@ urlpatterns = [
     path('reset/',views.ResetPassword.as_view()),
     path('logout/',views.logout),
     path('createnote/',views.CreateNote.as_view()),
+    path('note/<int:pk>', views.note_detail),
     url(r'^$', schema_view),
 ]
