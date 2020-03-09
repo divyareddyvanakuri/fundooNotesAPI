@@ -32,9 +32,14 @@ class ForgotPasswordSerializer(serializers.ModelSerializer):
         model = Person
         fields = ['email']
 
-class NoteSerializer(serializers.ModelSerializer):
+class DisplayNoteSerializer(serializers.ModelSerializer):
     class Meta:
         model =Note
-        fields = ['title','text']
+        fields = "__all__"
+        read_only_fields = ["user"]
         
 
+class CreateNoteSerializer(serializers.ModelSerializer):
+     class Meta:
+        model =Note
+        fields = ['title','text']

@@ -33,5 +33,6 @@ urlpatterns = [
     path('logout/',views.logout),
     path('createnote/',views.CreateNote.as_view()),
     path('note/<int:pk>', views.note_detail),
+    path('archive/', views.archive_detail),
     url(r'^$', schema_view),
 ]
