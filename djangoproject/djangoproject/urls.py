@@ -17,9 +17,9 @@ from django.contrib import admin
 from django.urls import path
 from fundooappnote import views
 from django.conf.urls import url
-# from rest_framework_swagger import get_swagger_view
+from rest_framework_swagger.views import get_swagger_view
 
-# schema_view = get_swagger_view(title='fundooNotes API')
+schema_view = get_swagger_view(title='fundooNotes API')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,7 +31,6 @@ urlpatterns = [
          views.passwordactivation, name='passwordactivation'),
     path('reset/',views.ResetPassword.as_view()),
     path('logout/',views.logout),
-    path('createnote/',views.createNote.as_view()),
-    
-#     url(r'^$', schema_view),
+    path('createnote/',views.CreateNote.as_view()),
+    url(r'^$', schema_view),
 ]

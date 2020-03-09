@@ -7,9 +7,10 @@ from django.core.mail import send_mail
 from djangoproject.settings import EMAIL_HOST_USER
 from django.template.loader import render_to_string
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from .serializers import RegisterSerializer, LoginSerializer, SetPasswordSerializer, UserSerializer, ForgotPasswordSerializer,NotesSerializer,TitleSerializer,TextSerializer
+from .serializers import RegisterSerializer, LoginSerializer, SetPasswordSerializer, UserSerializer, ForgotPasswordSerializer,NoteSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User,auth,UserManager
 from .models import Note
@@ -70,22 +71,6 @@ class LoginUser(GenericAPIView):
         return Response("Invalide user")
 
 
-class createNote(GenericAPIView):
-    serializer_class = NotesSerializer
-
-    def post(self, request):
-        try:
-            user = User.objects.get(username=self.request.user.username)
-        except User.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        title = request.data['title']                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-        text = request.data['text']
-        note = Note(user=user,title=title,text=text)
-        note.save()
-        return Response("note successfully added")
-        
-
-
 class ForgotPassword(GenericAPIView):
     serializer_class = ForgotPasswordSerializer
 
@@ -125,7 +110,7 @@ class ResetPassword(GenericAPIView):
             user = User.objects.get(username=username)
             user.set_password(newpassword)
             user.save()
-            return Response("you are succesfully reseted the account password")
+            return Response("you are successfully reseted the account password")
         return Response("please login ,before reset your password")
 
 
@@ -141,3 +126,45 @@ def passwordactivation(request, surl):
 def logout(request):
     auth.logout(request)
     return HttpResponse('you are successfully logged out from your account')
+
+
+class CreateNote(GenericAPIView):
+    serializer_class = NoteSerializer
+    def get(self,requset):
+        try:
+            user = User.objects.get(username=self.request.user.username)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        print(user.id)
+        note = Note.objects.filter(user_id=user.id)
+        serializer = NoteSerializer(note,many=True)
+        return Response(serializer.data)
+    def post(self, request):
+        serializer_class = NoteSerializer
+        try:
+            user = User.objects.get(username=self.request.user.username)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        title = request.data['title']                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+        text = request.data['text']
+        if Note.objects.filter(title=title).count() == 0: 
+            note = Note(user=user,title=title,text=text)
+            note.save()
+            serializer = NoteSerializer(note)
+            return Response(serializer.data)
+        return Response("with same title name note already existed")
+
+
+class NoteViews(GenericAPIView):
+    serializer_class = NoteSerializer
+    def get(self,request):
+        try:
+            user = User.objects.get(username=self.request.user.username)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        pk = user.id
+        print(pk)
+        note = Note.objects.filter(user_id=pk)
+        serializer = NoteSerializer(note)
+        return Response(serializer.data)
+
