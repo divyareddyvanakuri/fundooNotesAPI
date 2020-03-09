@@ -153,18 +153,3 @@ class CreateNote(GenericAPIView):
             serializer = NoteSerializer(note)
             return Response(serializer.data)
         return Response("with same title name note already existed")
-
-
-class NoteViews(GenericAPIView):
-    serializer_class = NoteSerializer
-    def get(self,request):
-        try:
-            user = User.objects.get(username=self.request.user.username)
-        except User.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        pk = user.id
-        print(pk)
-        note = Note.objects.filter(user_id=pk)
-        serializer = NoteSerializer(note)
-        return Response(serializer.data)
-
