@@ -43,6 +43,3 @@ class CreateNoteSerializer(serializers.ModelSerializer):
      class Meta:
         model =Note
         fields = ['title','text']
-# class UpdateNoteSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         fields = []

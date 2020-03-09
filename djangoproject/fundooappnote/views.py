@@ -124,6 +124,7 @@ def logout(request):
 
 
 class CreateNote(GenericAPIView):
+
     serializer_class = CreateNoteSerializer
 
     def post(self, request):
@@ -138,18 +139,21 @@ class CreateNote(GenericAPIView):
         note.save()
         return Response("Added note successfully fo fundooapp ")
 
+
+class DisplayNote(GenericAPIView):
+   
     def get(self, requset):
         try:
             user = User.objects.get(username=self.request.user.username)
         except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        print(user.id)
         note = Note.objects.filter(user_id=user.id)
         serializer = DisplayNoteSerializer(note, many=True)
         return Response(serializer.data)
 
 
 class UpdateNote(GenericAPIView):
+
     serializer_class = DisplayNoteSerializer
 
     def get(self, request, pk):
@@ -183,7 +187,7 @@ class UpdateNote(GenericAPIView):
 
 
 class DeleteNote(GenericAPIView):
-    
+
     def delete(self, request, pk):
         try:
             user = User.objects.get(username=request.user.username)
