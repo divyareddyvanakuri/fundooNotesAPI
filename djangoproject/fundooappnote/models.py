@@ -18,3 +18,4 @@ class Note(models.Model):
     title = models.CharField(max_length=30)
     text = models.TextField() 
     archive = models.BooleanField(default=False)
+   

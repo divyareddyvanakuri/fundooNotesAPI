@@ -42,4 +42,4 @@ class DisplayNoteSerializer(serializers.ModelSerializer):
 class CreateNoteSerializer(serializers.ModelSerializer):
      class Meta:
         model =Note
-        fields = ['title','text']
+        fields = ['title','text','archive']

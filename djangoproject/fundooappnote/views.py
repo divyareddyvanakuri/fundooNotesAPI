@@ -18,6 +18,7 @@ from .token_activation import tokenActivation, passwordActivation
 from django.views.decorators.csrf import csrf_exempt
 import jwt
 from rest_framework import status
+from django.utils.datastructures import MultiValueDictKeyError
 # objects = UserManager()
 # Create your views here.
 
@@ -135,7 +136,12 @@ class CreateNote(GenericAPIView):
         pk = user.id
         title = request.data['title']
         text = request.data['text']
-        note = Note(user=user, title=title, text=text)
+        try:
+            archive = request.data['archive']
+        except MultiValueDictKeyError:
+            archive= False
+        
+        note = Note(user=user,title=title,text=text,archive=archive)
         note.save()
         return Response("Added note successfully fo fundooapp ")
 
@@ -164,7 +170,7 @@ class UpdateNote(GenericAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer = CreateNoteSerializer(note)
+        serializer = DisplayNoteSerializer(note)
         return Response(serializer.data)
 
     def put(self, request, pk):
@@ -175,15 +181,25 @@ class UpdateNote(GenericAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        title = request.data['title']
-        text = request.data['text']
-        archive = request.data['archive']
+        try:
+            title = request.data['title']
+            text = request.data['text']
+        except MultiValueDictKeyError:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        try:
+            archive = request.data['archive']
+            if archive == 'true':
+                archive = True
+        except MultiValueDictKeyError:
+            archive= False
+        print(archive)
+        
         try:
             Note.objects.filter(pk=pk, user_id=user.id).update(
-                title=title, text=text, archive=archive)
+                title=title,text=text,archive=archive)
             return Response("updated")
-        except Note.InternalError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class DeleteNote(GenericAPIView):
