@@ -19,3 +19,4 @@ class Note(models.Model):
     text = models.TextField() 
     archive = models.BooleanField(default=False)
     pinnote = models.BooleanField(default=False)
+    trash = models.BooleanField(default=False)
