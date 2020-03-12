@@ -139,19 +139,20 @@ class CreateNote(GenericAPIView):
         try:
             archive = request.data['archive']
         except MultiValueDictKeyError:
-            archive= False
+            archive = False
         try:
             pinnote = request.data['archive']
         except MultiValueDictKeyError:
-            pinnote= False
-        
-        note = Note(user=user,title=title,text=text,archive=archive,pinnote=pinnote)
+            pinnote = False
+
+        note = Note(user=user, title=title, text=text,
+                    archive=archive, pinnote=pinnote)
         note.save()
         return Response("Added note successfully fo fundooapp ")
 
 
 class DisplayNote(GenericAPIView):
-   
+
     def get(self, requset):
         try:
             user = User.objects.get(username=self.request.user.username)
@@ -190,23 +191,21 @@ class UpdateNote(GenericAPIView):
             text = request.data['text']
         except MultiValueDictKeyError:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        try:
-            archive = request.data['archive']
+        if 'archive' in request.POST:
+            archive = request.POST['archive']
             if archive == 'true':
                 archive = True
-        except MultiValueDictKeyError:
-            archive= False
+        else:
+            archive = False
         print(archive)
-        try:
-            pinnote = request.data['archive']
-            if pinnote == 'true':
-                pinnote = True 
-        except MultiValueDictKeyError:
-            pinnote= False
+        if 'pinnote' in request.POST is 'ture':
+                pinnote = True
+        else:
+            pinnote = False
         print(pinnote)
         try:
             Note.objects.filter(pk=pk, user_id=user.id).update(
-                title=title,text=text,archive=archive,pinnote=pinnote)
+                title=title, text=text, archive=archive, pinnote=pinnote)
 
             return Response("updated")
         except Exception:
