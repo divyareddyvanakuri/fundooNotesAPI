@@ -36,5 +36,6 @@ urlpatterns = [
     path('deletenote/<int:pk>', views.DeleteNote.as_view()),
     path('archive/', views.archive_detail),
     path('displaynote/', views.DisplayNote.as_view()),
+    path('trash/',views.trash_detail),
     url(r'^$', schema_view),
 ]
