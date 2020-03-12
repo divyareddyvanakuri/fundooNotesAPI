@@ -275,3 +275,25 @@ def trash_detail(request):
     return Response(serializer.data)
 
 
+class Trash(GenericAPIView):
+    serializer_class = RestoreNoteSerializer
+    def put(self,request,pk):
+        try:
+            user = User.objects.get(username=request.user.username)
+            note = Note.objects.get(pk=pk, user_id=user.id)
+        except Note.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if 'trash' in request.POST:
+            trash = request.POST['trash']
+            if trash == 'True' or  trash == 'true':
+                return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED) 
+        else:
+            trash = False
+        print(trash)
+        try:
+            Note.objects.filter(pk=pk, user_id=user.id).update(trash=trash)
+            return Response("restored from the trash")
+        except Exception:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
