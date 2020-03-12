@@ -42,4 +42,9 @@ class DisplayNoteSerializer(serializers.ModelSerializer):
 class CreateNoteSerializer(serializers.ModelSerializer):
      class Meta:
         model =Note
-        fields = ['title','text','archive','pinnote','trash']
+        fields = ['title','text','archive','pinnote']
+
+class RestoreNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =Note
+        fields = ['trash']

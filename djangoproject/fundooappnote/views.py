@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from .serializers import RegisterSerializer, LoginSerializer, SetPasswordSerializer, UserSerializer, ForgotPasswordSerializer, CreateNoteSerializer, DisplayNoteSerializer
+from .serializers import RegisterSerializer, LoginSerializer, SetPasswordSerializer, UserSerializer, ForgotPasswordSerializer, CreateNoteSerializer, DisplayNoteSerializer,RestoreNoteSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User, auth, UserManager
 from .models import Note
@@ -19,10 +19,8 @@ from django.views.decorators.csrf import csrf_exempt
 import jwt
 from rest_framework import status
 from django.utils.datastructures import MultiValueDictKeyError
-# objects = UserManager()
+
 # Create your views here.
-
-
 class CreateUser(GenericAPIView):
     serializer_class = RegisterSerializer
     @ csrf_exempt
@@ -35,6 +33,7 @@ class CreateUser(GenericAPIView):
             if User.objects.filter(email=email).count() == 0:
                 user = User.objects.create_user(
                     username=username, email=email, password=password)
+                user.is_active=False
                 user.save()
                 token = tokenActivation(username, password)
                 current_site = get_current_site(request)
@@ -54,6 +53,12 @@ class CreateUser(GenericAPIView):
 
 def activate(request, surl):
     print("surl :", surl)
+    token_object = ShortURL.objects.get(surl=surl)
+    token = token_object.lurl
+    decode = jwt.decode(token,'SECRET_KEY')
+    username = str(decode['username'])
+    user = User.objects.get(username=username)
+    user.is_active = True
     return redirect('/login/')
 
 
@@ -145,15 +150,8 @@ class CreateNote(GenericAPIView):
         else:
             pinnote = False
         print(pinnote)
-        if 'trash' in request.POST:
-            trash = request.POST['trash']
-            if trash == 'true':
-                trash = True
-        else:
-            trash = False
-        print(trash)
         note = Note(user=user, title=title, text=text,
-                    archive=archive, pinnote=pinnote, trash=trash)
+                    archive=archive, pinnote=pinnote, trash=False)
         note.save()
         return Response("Added note successfully fo fundooapp ")
 
@@ -190,6 +188,8 @@ class UpdateNote(GenericAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        if note.trash == True:
+            return Response("please make sure trash equals to false before update")
         try:
             title = request.data['title']
             text = request.data['text']
@@ -213,12 +213,8 @@ class UpdateNote(GenericAPIView):
             trash = request.POST['trash']
             if trash == 'true':
                 trash = True
-        else:
-            trash = False
         print(trash)
         try:
-            if trash == True:
-                return Response("please make sure trash to equal false before update")
             Note.objects.filter(pk=pk, user_id=user.id).update(
                     title=title, text=text, archive=archive, pinnote=pinnote, trash=trash)
             return Response("updated")
@@ -252,7 +248,7 @@ def archive_detail(request):
     return Response(serializer.data)
 
 
-
+#if you want to display pinned notes 
 @api_view(['GET'])
 def pinnote_detail(request):
     try:
@@ -265,7 +261,7 @@ def pinnote_detail(request):
     serializer = DisplayNoteSerializer(note, many=True)
     return Response(serializer.data)
 
-
+#if you want to display trash content
 @api_view(['GET'])
 def trash_detail(request):
     try:
@@ -277,3 +273,5 @@ def trash_detail(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
     serializer = DisplayNoteSerializer(note, many=True)
     return Response(serializer.data)
+
+
