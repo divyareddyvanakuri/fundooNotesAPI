@@ -217,9 +217,10 @@ class UpdateNote(GenericAPIView):
             trash = False
         print(trash)
         try:
+            if trash == True:
+                return Response("please make sure trash to equal false before update")
             Note.objects.filter(pk=pk, user_id=user.id).update(
-                title=title, text=text, archive=archive, pinnote=pinnote, trash=trash)
-
+                    title=title, text=text, archive=archive, pinnote=pinnote, trash=trash)
             return Response("updated")
         except Exception:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
