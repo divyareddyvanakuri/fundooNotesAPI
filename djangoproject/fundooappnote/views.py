@@ -136,17 +136,29 @@ class CreateNote(GenericAPIView):
         pk = user.id
         title = request.data['title']
         text = request.data['text']
-        try:
-            archive = request.data['archive']
-        except MultiValueDictKeyError:
+        if 'archive' in request.POST:
+            archive = request.POST['archive']
+            if archive == 'true':
+                archive = True
+        else:
             archive = False
-        try:
-            pinnote = request.data['archive']
-        except MultiValueDictKeyError:
+        print(archive)
+        if 'pinnote' in request.POST :
+            pinnote = request.POST['pinnote']
+            if pinnote == 'true':
+                pinnote = True
+        else:
             pinnote = False
-
+        print(pinnote)
+        if 'trash' in request.POST :
+            trash = request.POST['trash']
+            if trash == 'true':
+                trash = True
+        else:
+            trash = False
+        print(trash)
         note = Note(user=user, title=title, text=text,
-                    archive=archive, pinnote=pinnote)
+                    archive=archive, pinnote=pinnote,trash=trash)
         note.save()
         return Response("Added note successfully fo fundooapp ")
 
@@ -198,14 +210,23 @@ class UpdateNote(GenericAPIView):
         else:
             archive = False
         print(archive)
-        if 'pinnote' in request.POST is 'ture':
+        if 'pinnote' in request.POST :
+            pinnote = request.POST['pinnote']
+            if pinnote == 'true':
                 pinnote = True
         else:
             pinnote = False
         print(pinnote)
+        if 'trash' in request.POST :
+            trash = request.POST['trash']
+            if trash == 'true':
+                trash = True
+        else:
+            trash = False
+        print(trash)
         try:
             Note.objects.filter(pk=pk, user_id=user.id).update(
-                title=title, text=text, archive=archive, pinnote=pinnote)
+                title=title, text=text, archive=archive, pinnote=pinnote,trash=trash)
 
             return Response("updated")
         except Exception:
