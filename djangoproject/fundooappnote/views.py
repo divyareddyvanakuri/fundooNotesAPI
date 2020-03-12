@@ -271,6 +271,15 @@ def trash_detail(request):
 class Trash(GenericAPIView):
     serializer_class = RestoreNoteSerializer
 
+    def get(self, request, pk):
+        try:
+            user = User.objects.get(username=request.user.username)
+            note = Note.objects.get(pk=pk, user_id=user.id)
+        except Note.DoesNotExist or User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = DisplayNoteSerializer(note)
+        return Response(serializer.data)
+
     def put(self, request, pk):
         try:
             user = User.objects.get(username=request.user.username)
