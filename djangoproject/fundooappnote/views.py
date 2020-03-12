@@ -251,6 +251,20 @@ def archive_detail(request):
     return Response(serializer.data)
 
 
+
+@api_view(['GET'])
+def pinnote_detail(request):
+    try:
+        user = User.objects.get(username=request.user.username)
+        note = Note.objects.filter(user_id=user.id, pinnote=True)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    except Note.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    serializer = DisplayNoteSerializer(note, many=True)
+    return Response(serializer.data)
+
+
 @api_view(['GET'])
 def trash_detail(request):
     try:
