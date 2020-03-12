@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from .serializers import RegisterSerializer, LoginSerializer, SetPasswordSerializer, UserSerializer, ForgotPasswordSerializer, CreateNoteSerializer, DisplayNoteSerializer,RestoreNoteSerializer
+from .serializers import RegisterSerializer, LoginSerializer, SetPasswordSerializer, UserSerializer, ForgotPasswordSerializer, CreateNoteSerializer, DisplayNoteSerializer, RestoreNoteSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User, auth, UserManager
 from .models import Note
@@ -33,7 +33,7 @@ class CreateUser(GenericAPIView):
             if User.objects.filter(email=email).count() == 0:
                 user = User.objects.create_user(
                     username=username, email=email, password=password)
-                user.is_active=False
+                user.is_active = False
                 user.save()
                 token = tokenActivation(username, password)
                 current_site = get_current_site(request)
@@ -46,16 +46,16 @@ class CreateUser(GenericAPIView):
                 print("msg", msg)
                 send_mail(mail_subject, msg, EMAIL_HOST_USER,
                           [email], fail_silently=False,)
-                return Response('successfully registered,please activate your accout')
-            return HttpResponse('user is already existed')
-        return HttpResponse("password mismatch")
+                return Response('successfully registered,please activate your accout trough mailed link')
+            return Response('user is already existed')
+        return Response("password mismatch")
 
 
 def activate(request, surl):
     print("surl :", surl)
     token_object = ShortURL.objects.get(surl=surl)
     token = token_object.lurl
-    decode = jwt.decode(token,'SECRET_KEY')
+    decode = jwt.decode(token, 'SECRET_KEY')
     username = str(decode['username'])
     user = User.objects.get(username=username)
     user.is_active = True
@@ -64,6 +64,7 @@ def activate(request, surl):
 
 class LoginUser(GenericAPIView):
     serializer_class = LoginSerializer
+
     def post(self, request):
         username = request.data['username']
         password = request.data['password']
@@ -77,6 +78,7 @@ class LoginUser(GenericAPIView):
 
 class ForgotPassword(GenericAPIView):
     serializer_class = ForgotPasswordSerializer
+
     def post(self, request):
         email = request.data['email']
         if User.objects.filter(email=email).count() == 0:
@@ -99,6 +101,7 @@ class ForgotPassword(GenericAPIView):
 
 class ResetPassword(GenericAPIView):
     serializer_class = SetPasswordSerializer
+
     def post(self, request):
         username = self.request.user.username
         newpassword = request.data['password']
@@ -111,7 +114,7 @@ class ResetPassword(GenericAPIView):
             return Response("you are successfully reseted the account password")
         return Response("please login ,before reset your password")
 
-
+# password activation through jwt
 def passwordactivation(request, surl):
     print("surl :", surl)
     url = ShortURL.objects.get(surl=surl)
@@ -125,9 +128,10 @@ def logout(request):
     auth.logout(request)
     return HttpResponse('you are successfully logged out from your account')
 
-
+# after login user can create notes
 class CreateNote(GenericAPIView):
     serializer_class = CreateNoteSerializer
+
     def post(self, request):
         try:
             user = User.objects.get(username=self.request.user.username)
@@ -155,7 +159,7 @@ class CreateNote(GenericAPIView):
         note.save()
         return Response("Added note successfully fo fundooapp ")
 
-
+# after login only it dispalys the login user created notes
 class DisplayNote(GenericAPIView):
     def get(self, requset):
         try:
@@ -166,16 +170,15 @@ class DisplayNote(GenericAPIView):
         serializer = DisplayNoteSerializer(note, many=True)
         return Response(serializer.data)
 
-
+# by passing the id of note we can update created note
 class UpdateNote(GenericAPIView):
     serializer_class = DisplayNoteSerializer
+
     def get(self, request, pk):
         try:
             user = User.objects.get(username=request.user.username)
             note = Note.objects.get(pk=pk, user_id=user.id)
-        except Note.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except User.DoesNotExist:
+        except Note.DoesNotExist or User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = DisplayNoteSerializer(note)
         return Response(serializer.data)
@@ -184,9 +187,7 @@ class UpdateNote(GenericAPIView):
         try:
             user = User.objects.get(username=request.user.username)
             note = Note.objects.get(pk=pk, user_id=user.id)
-        except Note.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except User.DoesNotExist:
+        except Note.DoesNotExist or User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if note.trash == True:
             return Response("please make sure trash equals to false before update")
@@ -216,84 +217,72 @@ class UpdateNote(GenericAPIView):
         print(trash)
         try:
             Note.objects.filter(pk=pk, user_id=user.id).update(
-                    title=title, text=text, archive=archive, pinnote=pinnote, trash=trash)
+                title=title, text=text, archive=archive, pinnote=pinnote, trash=trash)
             return Response("updated")
         except Exception:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-
+# to delete a created note
 class DeleteNote(GenericAPIView):
     def delete(self, request, pk):
         try:
             user = User.objects.get(username=request.user.username)
             note = Note.objects.get(pk=pk, user_id=user.id)
-        except Note.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except User.DoesNotExist:
+        except Note.DoesNotExist or User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         note.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
+# to display archive notes
 @api_view(['GET'])
 def archive_detail(request):
     try:
         user = User.objects.get(username=request.user.username)
         note = Note.objects.filter(user_id=user.id, archive=True)
-    except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    except Note.DoesNotExist:
+    except User.DoesNotExist or Note.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     serializer = DisplayNoteSerializer(note, many=True)
     return Response(serializer.data)
 
 
-#if you want to display pinned notes 
+# to display pinned notes
 @api_view(['GET'])
 def pinnote_detail(request):
     try:
         user = User.objects.get(username=request.user.username)
         note = Note.objects.filter(user_id=user.id, pinnote=True)
-    except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    except Note.DoesNotExist:
+    except User.DoesNotExist or Note.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     serializer = DisplayNoteSerializer(note, many=True)
     return Response(serializer.data)
 
-#if you want to display trash content
+# to display trash content
 @api_view(['GET'])
 def trash_detail(request):
     try:
         user = User.objects.get(username=request.user.username)
         note = Note.objects.filter(user_id=user.id, trash=True)
-    except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    except Note.DoesNotExist:
+    except User.DoesNotExist or Note.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     serializer = DisplayNoteSerializer(note, many=True)
     return Response(serializer.data)
 
-
+# to restore content from trash
 class Trash(GenericAPIView):
     serializer_class = RestoreNoteSerializer
-    def put(self,request,pk):
+
+    def put(self, request, pk):
         try:
             user = User.objects.get(username=request.user.username)
             note = Note.objects.get(pk=pk, user_id=user.id)
-        except Note.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except User.DoesNotExist:
+        except Note.DoesNotExist or User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if 'trash' in request.POST:
             trash = request.POST['trash']
-            if trash == 'True' or  trash == 'true':
-                return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED) 
-        else:
-            trash = False
-        print(trash)
         try:
-            Note.objects.filter(pk=pk, user_id=user.id).update(trash=trash)
-            return Response("restored from the trash")
+            if trash == False:
+                Note.objects.filter(pk=pk, user_id=user.id).update(trash=trash)
+                return Response("restored from the trash")
+            raise Exception
         except Exception:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
