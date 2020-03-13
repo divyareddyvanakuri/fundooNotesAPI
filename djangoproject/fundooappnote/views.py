@@ -50,7 +50,7 @@ class CreateUser(GenericAPIView):
             return Response('user is already existed')
         return Response("password mismatch")
 
-#
+
 def activate(request, surl):
     print("surl :", surl)
     token_object = ShortURL.objects.get(surl=surl)
@@ -58,8 +58,11 @@ def activate(request, surl):
     decode = jwt.decode(token,'SECRET_KEY')
     username = str(decode['username'])
     user = User.objects.get(username=username)
-    user.is_active = True
-    return redirect('/login/')
+    if user is not None:
+        user.is_active = True
+        user.save()
+        return HttpResponse('your account is activated')
+    return HttpResponse("user not existed")
 
 
 class LoginUser(GenericAPIView):
@@ -67,7 +70,7 @@ class LoginUser(GenericAPIView):
     def post(self, request):
         username = request.data['username']
         password = request.data['password']
-        user = authenticate(username=username, password=password)
+        user = auth.authenticate(username=username, password=password)
         if user is not None:
             if user.is_active:
                 auth.login(request, user)
@@ -117,7 +120,6 @@ def passwordactivation(request, surl):
     url = ShortURL.objects.get(surl=surl)
     token = url.lurl
     username = jwt.decode(token, 'SECRET_KEY')
-    print(username)
     return redirect('/reset/')
 
 
@@ -155,8 +157,9 @@ class CreateNote(GenericAPIView):
         note.save()
         return Response("Added note successfully fo fundooapp ")
 
-#after login only it dispalys the login user created notes 
+#to dispalys the login user created notes 
 class DisplayNote(GenericAPIView):
+    queryset = Note.objects.all()
     def get(self, requset):
         try:
             user = User.objects.get(username=self.request.user.username)
@@ -270,9 +273,20 @@ def trash_detail(request):
     return Response(serializer.data)
 
 #to restore content from trash  
-class Trash(GenericAPIView):
+class RestoreNote(GenericAPIView):
     serializer_class = RestoreNoteSerializer
-    
+
+    def get(self,request,pk):
+        try:
+            user = User.objects.get(username=request.user.username)
+            note = Note.objects.get(pk=pk, user_id=user.id)
+        except Note.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = DisplayNoteSerializer(note)
+        return Response(serializer.data)
+
     def put(self,request,pk):
         try:
             user = User.objects.get(username=request.user.username)
