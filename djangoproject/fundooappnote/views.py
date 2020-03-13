@@ -46,9 +46,9 @@ class CreateUser(GenericAPIView):
                 print("msg", msg)
                 send_mail(mail_subject, msg, EMAIL_HOST_USER,
                           [email], fail_silently=False,)
-                return Response('successfully registered,please activate your accout trough mailed link')
-            return Response('user is already existed')
-        return Response("password mismatch")
+                return Response(status=status.HTTP_200_OK)
+    
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 def activate(request, surl):
@@ -71,11 +71,12 @@ class LoginUser(GenericAPIView):
         username = request.data['username']
         password = request.data['password']
         user = auth.authenticate(username=username, password=password)
+        print(user)
         if user is not None:
             if user.is_active:
                 auth.login(request, user)
-                return Response("logged in successfully")
-        return Response("Invalide user")
+                return Response(status=status.HTTP_202_ACCEPTED)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class ForgotPassword(GenericAPIView):
