@@ -143,11 +143,10 @@ class DisplayNote(GenericAPIView):
     queryset = Note.objects.all()
     def get(self, requset):
         try:
-            user = User.objects.get(username=self.request.user.username)
-        except User.DoesNotExist:
+            note = Note.objects.filter(user_id=self.request.user.id)
+        except Note.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        note = Note.objects.filter(user_id=user.id)
-        serializer = DisplayNoteSerializer(note, many=True)
+        serializer = DisplayNoteSerializer(note,many=True)
         return Response(serializer.data)
 
 #by passing the id of note we can update created note
@@ -155,28 +154,22 @@ class UpdateNote(GenericAPIView):
     serializer_class = DisplayNoteSerializer
     def get(self, request, pk):
         try:
-            user = User.objects.get(username=request.user.username)
-            note = Note.objects.get(pk=pk, user_id=user.id)
+            note = Note.objects.get(pk=pk, user_id=request.user.id)
         except Note.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = DisplayNoteSerializer(note)
         return Response(serializer.data)
 
     def put(self, request, pk):
         try:
-            user = User.objects.get(username=request.user.username)
-            note = Note.objects.get(pk=pk, user_id=user.id)
-        except Note.DoesNotExist or User.DoesNotExist:
+            note = Note.objects.get(pk=pk, user_id=request.user.id)
+        except Note.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if note.trash == True:
             return Response("please make sure trash equals to false before update")
         serializer = DisplayNoteSerializer(note,data=request.data)
         if serializer.is_valid():
-            print("valide")
             serializer.save()
-            print("update")
             return Response(status=status.HTTP_202_ACCEPTED)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         
@@ -184,11 +177,8 @@ class UpdateNote(GenericAPIView):
 class DeleteNote(GenericAPIView):
     def delete(self, request, pk):
         try:
-            user = User.objects.get(username=request.user.username)
-            note = Note.objects.get(pk=pk, user_id=user.id)
+            note = Note.objects.get(pk=pk, user_id=request.user.id)
         except Note.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         note.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -197,10 +187,7 @@ class DeleteNote(GenericAPIView):
 @api_view(['GET'])
 def archive_detail(request):
     try:
-        user = User.objects.get(username=request.user.username)
-        note = Note.objects.filter(user_id=user.id, archive=True)
-    except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        note = Note.objects.filter(user_id=request.user.id, archive=True)
     except Note.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     serializer = DisplayNoteSerializer(note, many=True)
@@ -210,10 +197,7 @@ def archive_detail(request):
 @api_view(['GET'])
 def pinnote_detail(request):
     try:
-        user = User.objects.get(username=request.user.username)
-        note = Note.objects.filter(user_id=user.id, pinnote=True)
-    except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        note = Note.objects.filter(user_id=request.user.id, pinnote=True)
     except Note.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     serializer = DisplayNoteSerializer(note, many=True)
@@ -223,10 +207,7 @@ def pinnote_detail(request):
 @api_view(['GET'])
 def trash_detail(request):
     try:
-        user = User.objects.get(username=request.user.username)
-        note = Note.objects.filter(user_id=user.id, trash=True)
-    except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        note = Note.objects.filter(user_id=request.user.id, trash=True)
     except Note.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     serializer = DisplayNoteSerializer(note, many=True)
@@ -238,24 +219,19 @@ class RestoreNote(GenericAPIView):
 
     def get(self,request,pk):
         try:
-            user = User.objects.get(username=request.user.username)
-            note = Note.objects.get(pk=pk, user_id=user.id)
+            note = Note.objects.get(pk=pk, user_id=request.user.id)
         except Note.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = DisplayNoteSerializer(note)
         return Response(serializer.data)
 
     def put(self,request,pk):
         try:
-            user = User.objects.get(username=request.user.username)
-            note = Note.objects.get(pk=pk, user_id=user.id)
-        except Note.DoesNotExist or User.DoesNotExist:
+            note = Note.objects.get(pk=pk, user_id=request.user.id)
+        except Note.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = RestoreNoteSerializer(note,data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(status=status.HTTP_202_ACCEPTED)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        
