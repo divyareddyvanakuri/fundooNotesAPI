@@ -132,31 +132,11 @@ def logout(request):
 class CreateNote(GenericAPIView):
     serializer_class = CreateNoteSerializer
     def post(self, request):
-        try:
-            user = User.objects.get(username=self.request.user.username)
-        except User.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        pk = user.id
-        title = request.data['title']
-        text = request.data['text']
-        if 'archive' in request.POST:
-            archive = request.POST['archive']
-            if archive == 'true':
-                archive = True
-        else:
-            archive = False
-        print(archive)
-        if 'pinnote' in request.POST:
-            pinnote = request.POST['pinnote']
-            if pinnote == 'true':
-                pinnote = True
-        else:
-            pinnote = False
-        print(pinnote)
-        note = Note(user=user, title=title, text=text,
-                    archive=archive, pinnote=pinnote,trash=False)
-        note.save()
-        return Response("Added note successfully fo fundooapp ")
+        serializer = CreateNoteSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user_id=request.user.id)
+            return Response(status=status.HTTP_202_ACCEPTED)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 #to dispalys the login user created notes 
 class DisplayNote(GenericAPIView):
@@ -192,34 +172,14 @@ class UpdateNote(GenericAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         if note.trash == True:
             return Response("please make sure trash equals to false before update")
-        try:
-            title = request.data['title']
-            text = request.data['text']
-        except MultiValueDictKeyError:
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        if 'archive' in request.POST:
-            archive = request.POST['archive']
-            if archive == 'true':
-                archive = True
-        else:
-            archive = False
-        if 'pinnote' in request.POST:
-            pinnote = request.POST['pinnote']
-            if pinnote == 'true':
-                pinnote = True
-        else:
-            pinnote = False
-        if 'trash' in request.POST:
-            trash = request.POST['trash']
-            if trash == 'true':
-                trash = True
-        try:
-            Note.objects.filter(pk=pk, user_id=user.id).update(
-                    title=title, text=text, archive=archive, pinnote=pinnote, trash=trash)
-            return Response("updated")
-        except Exception:
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
+        serializer = DisplayNoteSerializer(note,data=request.data)
+        if serializer.is_valid():
+            print("valide")
+            serializer.save()
+            print("update")
+            return Response(status=status.HTTP_202_ACCEPTED)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        
 #to delete a created note
 class DeleteNote(GenericAPIView):
     def delete(self, request, pk):
@@ -245,7 +205,6 @@ def archive_detail(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
     serializer = DisplayNoteSerializer(note, many=True)
     return Response(serializer.data)
-
 
 #to display pinned notes 
 @api_view(['GET'])
@@ -294,11 +253,9 @@ class RestoreNote(GenericAPIView):
             note = Note.objects.get(pk=pk, user_id=user.id)
         except Note.DoesNotExist or User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if 'trash' in request.POST:
-            trash = request.POST['trash']
-            if trash == 'True' or  trash == 'true':
-                return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED) 
-        else:
-            trash = False
-            Note.objects.filter(pk=pk, user_id=user.id).update(trash=trash)
-            return Response("restored from the trash")
+        serializer = RestoreNoteSerializer(note,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_202_ACCEPTED)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        
