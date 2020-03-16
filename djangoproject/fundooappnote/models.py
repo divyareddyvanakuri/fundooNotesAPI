@@ -20,3 +20,5 @@ class Note(models.Model):
     archive = models.BooleanField(default=False)
     pinnote = models.BooleanField(default=False)
     trash = models.BooleanField(default=False)
+    date = models.DateField(auto_now=False,auto_now_add=False,blank=True,null=True)
+    time = models.TimeField(null=True)

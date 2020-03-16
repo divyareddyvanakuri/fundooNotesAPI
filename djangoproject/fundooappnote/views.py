@@ -19,6 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 import jwt
 from rest_framework import status
 from django.utils.datastructures import MultiValueDictKeyError
+from .tasks import sleepy
 
 # Create your views here.
 class CreateUser(GenericAPIView):
@@ -46,7 +47,7 @@ class CreateUser(GenericAPIView):
                 print("msg", msg)
                 send_mail(mail_subject, msg, EMAIL_HOST_USER,
                           [email], fail_silently=False,)
-                return Response(status=status.HTTP_200_OK)
+                return Response('Please check your email to confirm your account.',status=status.HTTP_200_OK)
     
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -227,7 +228,7 @@ class RestoreNote(GenericAPIView):
 
     def put(self,request,pk):
         try:
-            note = Note.objects.get(pk=pk, user_id=request.user.id)
+            note = Note.objects.get(pk=pk,trash=True,user_id=request.user.id)
         except Note.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = RestoreNoteSerializer(note,data=request.data)
@@ -235,3 +236,17 @@ class RestoreNote(GenericAPIView):
             serializer.save()
             return Response(status=status.HTTP_202_ACCEPTED)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+def index(request):
+    sleepy(10)
+    return HttpResponse("Done!")
+class Remainder(GenericAPIView):
+    queryset = Note.objects.all()
+    def get(self,request,pk):
+        sleepy(60)
+        try:
+            note = Note.objects.filter(user_id=request.user.id,pk=pk)
+        except Note.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = DisplayNoteSerializer(note, many=True)
+        return Response(serializer.data)

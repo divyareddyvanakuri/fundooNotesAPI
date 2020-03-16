@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_short_url',
     'rest_framework_swagger',
+    'django_celery_results',
     'fundooappnote',
 ]
 
@@ -143,3 +144,11 @@ EMAIL_HOST_PASSWORD = 'suguna@123'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
+
+
+BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kolkata'
