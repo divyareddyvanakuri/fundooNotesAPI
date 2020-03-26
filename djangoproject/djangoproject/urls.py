@@ -40,6 +40,7 @@ urlpatterns = [
     path('pinnote/',views.pinnote_detail,name='pinnote'),
     path('restore/<int:pk>',views.RestoreNote.as_view(),name='restore'),
     url(r'^$', schema_view),
-    path('index/',views.index,name='index'),
-    path('remainder/<int:pk>',views.Remainder.as_view(),name='remainder')
+    # path('index/',views.index,name='index'),
+    path('remainder/<int:pk>',views.Remainder.as_view(),name='remainder'),
+    # path('collaborators/',views.Collaborator.as_view(),name='collaborators')
 ]

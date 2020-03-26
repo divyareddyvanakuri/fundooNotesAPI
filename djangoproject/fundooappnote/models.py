@@ -20,5 +20,9 @@ class Note(models.Model):
     archive = models.BooleanField(default=False)
     pinnote = models.BooleanField(default=False)
     trash = models.BooleanField(default=False)
-    date = models.DateField(auto_now=False,auto_now_add=False,blank=True,null=True)
-    time = models.TimeField(null=True)
+    remainder = models.DateTimeField(blank=True,null=True)
+    collaborator = models.ManyToManyField(User,blank=True,related_name='Note')
+# class Collaborators (models.Model):
+#     collaborators = models.ManyToManyField(User,blank=True)
+#     note = models.ManyToManyField(Note,blank=True)
+    

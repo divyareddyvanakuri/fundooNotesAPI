@@ -38,9 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_celery_beat',
     'django_short_url',
     'rest_framework_swagger',
     'django_celery_results',
+    'djcelery',
+    'django_crontab',
     'fundooappnote',
 ]
 
@@ -83,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'demodb',
         'USER': 'Divya',
-        'PASSWORD': '12',
+        'PASSWORD': '',
         'HOST': 'localhost',
         # 'default-character-set' : 'utf8',
         'PORT': '3306'

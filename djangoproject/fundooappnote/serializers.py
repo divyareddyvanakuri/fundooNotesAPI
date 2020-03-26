@@ -43,9 +43,15 @@ class CreateNoteSerializer(serializers.ModelSerializer):
      class Meta:
         model =Note
         # fields = "__all__"
-        fields = ['title','text','archive','pinnote','date','time']
+        fields = ['title','text','archive','pinnote','remainder','collaborator']
 
 class RestoreNoteSerializer(serializers.ModelSerializer):
     class Meta:
         model =Note
         fields = ['trash']
+        
+# class CollaboratorSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Collaborators
+#         fields = ['collaborators','note']
+       
