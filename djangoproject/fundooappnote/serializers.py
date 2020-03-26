@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person,Note
+from .models import Person,Note,ProfilePic
 from django.contrib.auth.models import User
 
 
@@ -50,8 +50,8 @@ class RestoreNoteSerializer(serializers.ModelSerializer):
         model =Note
         fields = ['trash']
         
-# class CollaboratorSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Collaborators
-#         fields = ['collaborators','note']
+class ProfilePicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =ProfilePic
+        fields = ['image']
        

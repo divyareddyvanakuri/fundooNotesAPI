@@ -12,10 +12,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from .serializers import (RegisterSerializer, LoginSerializer, SetPasswordSerializer,
                           UserSerializer, ForgotPasswordSerializer, CreateNoteSerializer,
-                          DisplayNoteSerializer, RestoreNoteSerializer)
+                          DisplayNoteSerializer, RestoreNoteSerializer,ProfilePicSerializer)
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User, auth, UserManager
-from .models import Note
+from .models import Note,ProfilePic
 from .token_activation import tokenActivation, passwordActivation
 from django.views.decorators.csrf import csrf_exempt
 import jwt
@@ -179,8 +179,6 @@ class UpdateNote(GenericAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         # if note.trash == True:
         #     return Response("please make sure trash equals to false before update")
-        print(Note.objects.filter(user_id=request.user.id))
-        print(note.collaborator.filter(id=request.user.id))
         emails=[]
         collaborators = note.collaborator.all()
         print(collaborators)
@@ -189,16 +187,12 @@ class UpdateNote(GenericAPIView):
             emails.append(mail)
         q = User.objects.get(id=note.user_id)
         emails.append(q.email)
-        print(emails)
         q = request.user.email
-        print(q)
-        print(len(emails))
         for index in range(len(emails)-1):
             if str(q) == emails[index]:
-                del emails[index]
-        print(emails)            
+                del emails[index]            
         send_mail("update on collaboratored note", "note_id:"+str(pk),EMAIL_HOST_USER,
-                ['divayvanakuri49@gmail.com'], fail_silently=False,)
+                [emails], fail_silently=False,)
         serializer = DisplayNoteSerializer(note, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -246,8 +240,6 @@ def trash_detail(request):
     return Response(serializer.data)
 
 # to restore content from trash
-
-
 class RestoreNote(GenericAPIView):
     serializer_class = RestoreNoteSerializer
 
@@ -286,11 +278,14 @@ class Remainder(GenericAPIView):
         worker = sleepy(serializer.data, remainder)
         return Response(worker)
 
-# class Collaborator(GenericAPIView):
-#     serializer_class = CollaboratorSerializer
-#     def post(self,request,pk):
-#         serializer = CollaboratorSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save(user_id=request.user.id,)
-#             return Response(status=status.HTTP_202_ACCEPTED)
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+class ProfilePicUpload(GenericAPIView):
+    serializer_class = ProfilePicSerializer
+    def post(self, request):
+        serializer = ProfilePicSerializer(data=request.data)
+        print(request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response("profilepic updated")
+        return Response("profilepic not updated")
+   

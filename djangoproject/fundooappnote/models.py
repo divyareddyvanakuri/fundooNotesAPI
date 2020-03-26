@@ -22,7 +22,8 @@ class Note(models.Model):
     trash = models.BooleanField(default=False)
     remainder = models.DateTimeField(blank=True,null=True)
     collaborator = models.ManyToManyField(User,blank=True,related_name='Note')
-# class Collaborators (models.Model):
-#     collaborators = models.ManyToManyField(User,blank=True)
-#     note = models.ManyToManyField(Note,blank=True)
+
+class ProfilePic(models.Model):
+    image = models.ImageField(upload_to="images")
+
     
